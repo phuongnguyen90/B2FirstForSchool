@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B2 First – Practice Tests</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+:root{
+  --ink:#1b2332;--ink-muted:#5a6478;--ink-faint:#9aa3b2;--surface:#f4f6fa;--card:#fff;--border:#dde2ec;
+  --accent:#2358b8;--accent-dim:#dce9ff;--ok:#1a6e3c;--ok-bg:#e6f7ee;--ok-border:#7ecfa2;
+  --err:#b01e1e;--err-bg:#fdeaea;--err-border:#f0a0a0;--warn:#7a5c00;--warn-bg:#fff8e6;--warn-border:#f0d080;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--surface);color:var(--ink);font-size:15px;line-height:1.6}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:#fff;border-right:1px solid var(--border);padding:18px 14px 30px}
+.brand{font-weight:700;font-size:1rem;margin:0 6px 2px}
+.brand-sub{font-size:.78rem;color:var(--ink-muted);margin:0 6px 14px}
+.content{padding:26px 30px 0;max-width:960px;width:100%}
+.menu-btn{display:none;position:fixed;top:10px;left:10px;z-index:30;border:none;background:var(--accent);color:#fff;font-weight:600;font-size:.85rem;padding:8px 12px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.scrim{display:none}
+
+/* Mode switch */
+.seg{display:flex;background:#e9edf5;border-radius:9px;padding:3px;margin:0 4px}
+.seg-btn{flex:1;border:none;background:none;padding:7px 6px;border-radius:7px;font-weight:600;font-size:.8rem;color:var(--ink-muted);cursor:pointer}
+.seg-btn.active{background:#fff;color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.mode-desc{font-size:.76rem;color:var(--ink-muted);margin:8px 6px 16px;line-height:1.5}
+
+/* TOC */
+.toc details{margin-bottom:6px}
+.toc summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:8px 8px;border-radius:7px;font-weight:700;font-size:.9rem}
+.toc summary::-webkit-details-marker{display:none}
+.toc summary::before{content:"▸";font-size:.75rem;color:var(--ink-faint);margin-right:6px;transition:transform .15s}
+.toc details[open] summary::before{transform:rotate(90deg)}
+.toc summary .t-title{flex:1}
+.toc summary:hover{background:var(--surface)}
+.toc-link{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 8px 7px 26px;border-radius:7px;color:var(--ink);text-decoration:none;font-size:.85rem}
+.toc-link small{display:block;color:var(--ink-muted);font-size:.74rem}
+.toc-link:hover{background:var(--surface)}
+.toc-link.active{background:var(--accent-dim);color:var(--accent);font-weight:600}
+.badge{font-size:.72rem;font-weight:700;padding:1px 8px;border-radius:10px;background:#eef1f6;color:var(--ink-muted);white-space:nowrap}
+.badge.done{background:var(--accent);color:#fff}
+
+/* Section */
+.part[hidden]{display:none}
+.crumb{font-size:.8rem;color:var(--ink-muted);margin-bottom:4px}
+.part h2{font-size:1.25rem;margin-bottom:8px}
+.instr{font-size:.88rem;color:var(--ink-muted);background:#fff;border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px;margin-bottom:16px}
+.instr strong{color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:12px}
+.qn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:.72rem;font-weight:700;margin-right:8px;flex-shrink:0}
+
+/* Results */
+.results{display:none;background:#fff;border:2px solid var(--accent);border-radius:10px;padding:14px 18px;margin-bottom:16px}
+.results.show{display:block}
+.results h3{font-size:.98rem;margin-bottom:6px}
+.res-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.88rem}
+.res-row b{color:var(--accent)}
+.res-row.total{border-bottom:none;font-weight:700}
+
+/* Key word transformations */
+.example{background:#f0f6ff;border:1px solid #c3dbff;border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:.86rem;color:var(--ink-muted)}
+.example-ans{display:inline-block;background:var(--accent);color:#fff;font-weight:700;font-size:.78rem;padding:1px 10px;border-radius:5px}
+.kwt-original{font-family:'Lora',serif;font-style:italic;color:var(--ink-muted);font-size:.92rem;display:flex;align-items:center}
+.kwt-key{display:inline-block;background:var(--accent-dim);color:var(--accent);font-weight:700;font-size:.8rem;letter-spacing:.06em;padding:2px 10px;border-radius:4px;margin:8px 0 4px 34px}
+.kwt-line{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px;font-size:.95rem;line-height:2.3;padding-left:34px}
+.txt-in{border:none;border-bottom:2px solid #b8c2d4;padding:2px 6px;font:inherit;font-size:.92rem;background:transparent;outline:none;color:var(--ink);text-transform:uppercase}
+.txt-in::placeholder{text-transform:none;color:var(--ink-faint);font-size:.82rem}
+.txt-in:focus{border-bottom-color:var(--accent)}
+.kwt-line .txt-in{min-width:220px;flex:0 1 300px}
+.txt-in.ok{border-bottom-color:var(--ok);color:var(--ok)}
+.txt-in.err{border-bottom-color:var(--err);color:var(--err)}
+
+/* Reading texts */
+.passage{background:#fff;border:1px solid var(--border);border-radius:8px;padding:18px 22px;margin-bottom:6px;font-family:'Lora',serif;font-size:.92rem;line-height:1.85;columns:2 360px;column-gap:28px}
+.passage p{margin-bottom:10px}
+.src{display:block;font-size:.76rem;color:var(--ink-faint);font-style:italic;margin-bottom:16px}
+.text-title{text-align:center;font-size:1.02rem;margin-bottom:2px}
+.text-sub{text-align:center;font-style:italic;font-size:.86rem;color:var(--ink-muted);margin-bottom:12px}
+
+/* Options */
+.q-title{font-size:.92rem;font-weight:600;display:flex;align-items:flex-start;margin-bottom:10px}
+.opts{display:flex;flex-direction:column;gap:4px}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;border-radius:7px;cursor:pointer;border:2px solid transparent;background:none;text-align:left;font-size:inherit;color:inherit;width:100%}
+.opt:hover:not([disabled]){background:#f0f6ff;border-color:#c3dbff}
+.opt[disabled]{cursor:default}
+.letter{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--ink-muted);flex-shrink:0;margin-top:1px;background:#fff}
+.opt-text{font-size:.9rem;color:var(--ink-muted)}
+.opt.chosen .letter{background:var(--accent);border-color:var(--accent);color:#fff}
+.opt.r-ok{background:var(--ok-bg);border-color:var(--ok-border)}
+.opt.r-ok .letter{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.r-err{background:var(--err-bg);border-color:var(--err-border)}
+.opt.r-err .letter{background:var(--err);border-color:var(--err);color:#fff}
+
+/* Gapped text / cloze */
+.bank{background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:8px;padding:12px 18px;margin-bottom:16px}
+.bank-row{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--warn-border);font-size:.88rem}
+.bank-row:last-child{border-bottom:none}
+.bank-row b{color:#8a6200;min-width:16px}
+.article{background:#fff;border:1px solid var(--border);border-radius:8px;padding:18px 22px;margin-bottom:12px;font-family:'Lora',serif;font-size:.92rem;line-height:2.05}
+.article p{margin-bottom:12px}
+.gap{display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;vertical-align:middle}
+.gap-n{font-size:.72rem;font-weight:700;color:var(--accent);border:2px solid var(--accent);border-radius:4px;padding:0 5px;line-height:1.5}
+.gap-sel{font:600 .84rem 'Inter',sans-serif;color:var(--accent);background:var(--accent-dim);border:none;border-bottom:2px solid var(--accent);padding:1px 4px;border-radius:4px 4px 0 0;cursor:pointer}
+.gap-sel.ok{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.gap-sel.err{background:var(--err-bg);border-color:var(--err);color:var(--err)}
+.gap .txt-in{width:130px;font-size:.86rem}
+.stem{font-size:.75rem;font-weight:700;color:var(--ink-muted)}
+
+/* Matching */
+.people{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px;margin-bottom:16px}
+.person{background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px 18px;font-family:'Lora',serif;font-size:.9rem;line-height:1.8}
+.person h4{font-family:'Inter',sans-serif;font-size:.92rem;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.person h4 span{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;background:var(--ink);color:#fff;font-size:.75rem}
+.lead{font-weight:600;margin-bottom:10px}
+.mm-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mm-q{flex:1;min-width:220px;font-size:.9rem}
+.mm-opts{display:flex;gap:6px}
+.mm-opts .opt{width:auto;padding:0;border:none}
+.mm-opts .letter{width:34px;height:34px;font-size:.8rem}
+.mm-opts .opt:hover:not([disabled]){background:none}
+.mm-opts .opt:hover:not([disabled]) .letter{border-color:var(--accent)}
+.mm-opts .opt.r-ok,.mm-opts .opt.r-err{background:none;border:none}
+
+/* Feedback */
+.fb{display:none;font-size:.85rem;margin-top:10px;padding:9px 12px;border-radius:7px;line-height:1.55}
+.fb.show{display:block}
+.fb.ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-border)}
+.fb.err{background:var(--err-bg);color:#7d1414;border:1px solid var(--err-border)}
+.fb .ans{font-weight:700;color:var(--err)}
+.fb .hint{display:block;margin-top:4px;color:var(--ink)}
+.fb .hint::before{content:"💡 "}
+.fb-list .fb{margin-top:8px}
+
+/* Bottom bar */
+.part-actions{position:sticky;bottom:0;margin:22px -30px 0;padding:12px 30px;background:rgba(244,246,250,.97);border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.status{flex:1;min-width:200px;font-size:.88rem;color:var(--ink-muted)}
+.status b{color:var(--accent);font-size:1rem}
+.btn{border:none;padding:9px 18px;border-radius:7px;font-weight:600;font-size:.85rem;cursor:pointer}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#1a3f99}
+.btn-ghost{background:#fff;color:var(--accent);border:1.5px solid var(--accent)}.btn-ghost:hover{background:var(--accent-dim)}
+.btn-nav{background:none;color:var(--ink-muted);border:1px solid var(--border);padding:8px 12px}
+.btn[disabled]{opacity:.45;cursor:default}
+body.exam .only-practice,body.practice .only-exam{display:none}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:290px;z-index:40;transform:translateX(-105%);transition:transform .2s;box-shadow:4px 0 16px rgba(0,0,0,.15)}
+  body.nav-open .sidebar{transform:none}
+  body.nav-open .scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:35}
+  .menu-btn{display:block}
+  .content{padding:58px 16px 0}
+  .part-actions{margin:22px -16px 0;padding:10px 16px}
+  .passage{columns:1}.people{grid-template-columns:1fr}
+  .kwt-line,.kwt-key{padding-left:0;margin-left:0}
+}
+</style>
+</head>
+<body class="exam">
+<button class="menu-btn" id="menu-btn" aria-label="Mở mục lục">☰ Mục lục</button>
+<div class="scrim" id="scrim"></div>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand" id="brand"></div>
+    <div class="brand-sub">Reading &amp; Use of English</div>
+    <div class="seg" role="group" aria-label="Chế độ">
+      <button type="button" class="seg-btn active" data-mode="exam">Thi</button>
+      <button type="button" class="seg-btn" data-mode="practice">Luyện tập</button>
+    </div>
+    <p class="mode-desc" id="mode-desc"></p>
+    <nav class="toc" id="toc"></nav>
+  </aside>
+  <main class="content" id="content"></main>
+</div>
+
+<script>
+/* =====================================================================
+   NỘI DUNG SÁCH — thêm test mới vào mảng BOOK.tests
+   Kiểu Part hỗ trợ:
+     kwt      : Key word transformations (items: n, orig, key, pre, post)
+     mc       : Đọc hiểu trắc nghiệm A–D (passage, questions: n, q, o[4])
+     gapped   : Điền câu vào bài (options A–G, paragraphs có {{số câu}})
+     matching : Nối người/đoạn A–D (people, questions: [n, text])
+     cloze    : Điền vào bài; variant "mc" (choices[n] = 4 phương án),
+                "open" (tự điền 1 từ), "wordform" (stems[n] = từ gốc)
+   Đáp án nằm riêng trong KEYS (đã mã hóa), theo test id và số câu.
+   ===================================================================== */
+const BOOK = {
+  title: "B2 First – Practice Tests",
+  tests: [
+    {
+      id: "t1", title: "Test 1",
+      parts: [
+        {
+          id: "p4", label: "Part 4", name: "Key word transformations", type: "kwt",
+          instr: "Complete the second sentence so that it has a similar meaning to the first sentence, using the word given. <strong>Do not change the word given.</strong> You must use between <strong>two</strong> and <strong>five</strong> words, including the word given.",
+          example: { orig: "Oliver has the talent to become a professional singer.", key: "THAT", pre: "Oliver is so", ans: "TALENTED THAT HE", post: "could become a professional singer." },
+          items: [
+            { n: 25, orig: "'I'm sorry for causing so much trouble,' Emma said.", key: "FOR", pre: "Emma", post: "caused so much trouble." },
+            { n: 26, orig: "Jake received such nice messages when he was ill.", key: "WAS", pre: "Because of his illness, Jake", post: "really nice messages." },
+            { n: 27, orig: "I didn't manage to help Marco with his task.", key: "IN", pre: "I didn't", post: "Marco with his task." },
+            { n: 28, orig: "We've noticed there have been more dropouts this term.", key: "NUMBER", pre: "We've noticed a rise", post: "dropouts this term." },
+            { n: 29, orig: "I'm sorry, but you must not take photos here.", key: "ALLOWED", pre: "I'm afraid taking photos", post: "here." },
+            { n: 30, orig: "I think she was afraid of raising a child in such a big city.", key: "UP", pre: "I think", post: "in such a big city caused her fear." }
+          ]
+        },
+        {
+          id: "p5", label: "Part 5", name: "Multiple choice", type: "mc",
+          instr: "You are going to read an extract from the novel <em>The Wonderful Wizard of Oz</em>. For questions 31–36, choose the answer (A, B, C or D) which you think fits best according to the text.",
+          passage: [
+            "Dorothy lived in the middle of the great Kansas prairies, with Uncle Henry, who was a farmer, and Aunt Em, who was the farmer's wife. Their wooden house was small, for the material to build it had to be carried by wagon many miles. There were four walls, a floor and a roof, which made one room; and this room contained a rusty looking cookstove, a cupboard for the dishes, a table, three or four chairs, and the beds. Uncle Henry and Aunt Em had a big bed in one corner, and Dorothy a little bed in another corner. There was no attic at all, and no cellar — except a small hole dug in the ground, called a cyclone cellar, where the family could go in case one of those great whirlwinds or tornadoes arose, strong enough to destroy any building in its path. It was reached by a trap door in the middle of the floor, from which a ladder led down into the small, dark hole.",
+            "When Dorothy stood in the doorway and looked around, she could see nothing but the great grey prairie on every side. Not a tree nor a house broke the broad sweep of flat country that reached to the edge of the sky in all directions. The sun had baked the ploughed land into a grey mass, with little cracks running through it. Even the grass was not green, for the sun had burned the tops of the long blades until they were the same grey colour to be seen everywhere. Once the house had been painted, but the sun destroyed the paint and the rains washed it away, and now the house was as dull and grey as everything else.",
+            "When Aunt Em came there to live she was a young, pretty wife. The sun and wind had changed her, too. They had taken the sparkle from her eyes and left them a sober grey; they had taken the red from her cheeks and lips, and they were grey also. She was thin, and she never smiled now. When Dorothy, who was an orphan, first came to her, Aunt Em had been so startled by the child's laughter that she would scream and press her hand upon her heart whenever Dorothy's merry voice reached her ears; and she still looked at the little girl with wonder that she could find anything to laugh at.",
+            "Uncle Henry never laughed. He worked hard from morning till night and did not know what joy was. He was grey also, from his long beard to his rough boots, and he looked serious and solemn, and rarely spoke. It was Toto that made Dorothy laugh, and saved her from growing as grey as her other surroundings. Toto was not grey; he was a little black dog, with long silky hair and small black eyes that twinkled merrily on either side of his funny, little nose. Toto played all day long, and Dorothy played with him, and loved him dearly.",
+            "Today, however, they were not playing. Uncle Henry sat upon the doorstep and looked anxiously at the sky, which was even greyer than usual. Dorothy stood in the door with Toto in her arms, and looked at the sky too. Aunt Em was washing the dishes.",
+            "From the far north they heard a low wail of the wind, and Uncle Henry and Dorothy could see where the long grass bowed in waves before the coming storm. There now came a sharp whistling in the air from the south, and as they turned their eyes that way, they saw ripples in the grass coming from that direction also."
+          ],
+          source: "Adapted from The Wonderful Wizard of Oz, by L. Frank Baum.",
+          questions: [
+            { n: 31, q: "In the first paragraph, what information can we find about Dorothy's house?", o: ["It was very small, with only four rooms.", "It was a single-room house made of wood.", "It was a small house made of straw.", "Its furniture was all rusty and the only bed had a hole in it."] },
+            { n: 32, q: "What can we imply about the surroundings of Dorothy's house?", o: ["There weren't any neighbours around.", "It was a beautiful place with lots of grass and sunlight.", "It was a grey place without any happiness.", "The trees on the prairie were tall, but the houses were small."] },
+            { n: 33, q: "What does the author suggest about Dorothy's aunt?", o: ["She seems to have aged little.", "She was even happier after Dorothy came to live with her.", "She's had a difficult life since she moved to Kansas.", "She was never surprised by other people's laughter."] },
+            { n: 34, q: "In 'her other surroundings' (paragraph 4), 'other' refers to", o: ["everything and everyone else around her.", "the great prairies in Kansas.", "Uncle Henry.", "Uncle Henry and Aunt Em's belongings."] },
+            { n: 35, q: "In the fifth paragraph, what is the author's purpose in showing the characters' anxiety?", o: ["to raise curiosity about the family relationship", "to exemplify the relationship between Dorothy and her uncle", "to demonstrate that days were not always the same there", "to show an important event for the plot"] },
+            { n: 36, q: "What can we imply about the next events of the story?", o: ["Uncle Henry changes his behaviour eventually.", "Dorothy's dog Toto has a very important role in it.", "The characters' relationship is likely to improve.", "It involves an extreme weather condition."] }
+          ]
+        },
+        {
+          id: "p6", label: "Part 6", name: "Gapped text", type: "gapped",
+          instr: "You are going to read a newspaper article about seaside resorts in England. Six sentences have been removed from the article. Choose from the sentences <strong>A–G</strong> the one which fits each gap (37–42). There is <strong>one extra sentence</strong> which you do not need to use.",
+          title: "A British summer holiday",
+          options: {
+            A: "Besides, it is just a short stroll from the sandy bay of this place, which has been voted one of the best local beaches.",
+            B: "Tens of thousands of tourists flock to the town year-round to ride the dodgems, take the ghost train or race around the large electric indoor go-karting track.",
+            C: "This is one of the few beaches that allow dogs all year round, which means that even furry friends can come along in the summer.",
+            D: "Its age shows in its dramatic coastline, and you can even visit a prehistoric cave with a fossil that is over 40,000 years old.",
+            E: "Its mixture of green spaces, beach and town means that there's always something to keep you entertained.",
+            F: "A trip to a seaside resort in England captures all the senses.",
+            G: "Its family-friendly beaches provide hours of free entertainment."
+          },
+          paragraphs: [
+            "Scratchy sand under your toes; brightly coloured beach huts hugging the beach front; shouts of happiness from children chasing each other across the beach and squawks of seagulls hunting scraps of food; the smell of salt wafting from the sea. {{37}} Building sandcastles, playing games at the seafront arcades, eating fish and chips as the sun goes down – a trip to the coast is a treat for both adults and children.",
+            "The 400-year history of the English Riviera, along the Devon coast, makes it an interesting historic destination to discover. {{38}} The English Riviera is full of stories of pirates, smugglers and shipwrecks and, if you dare, an underground ghost tour.",
+            "Although it has one of the largest naturally occurring beaches in the UK, Weston-super-Mare is better known for its iconic pier. {{39}} If you fancy something a little more sophisticated, you can sit and admire the views of the beach from the Edwardian-style tearoom, where a traditional British afternoon tea is served daily. Thin sandwiches with typical fillings such as tuna and cucumber, or smoked salmon are accompanied by miniature cakes and, of course, copious amounts of hot tea.",
+            "Woolacombe Bay in North Devon is one of England's most popular holiday hotspots. {{40}} From climbing over rocks, to paddleboarding and swimming in the sea, from hunting crabs and eels in rockpools to catching the surf or taking lessons in how to ride the waves, there's something for everyone around the golden sand dunes of Woolacombe Bay. {{41}}",
+            "For those who fancy going a little further afield, Shanklin is just a short ferry ride away in the Isle of Wight. Unlike many of England's beaches, which are covered in small smooth pebbles, Shanklin has a wide, sandy shore. After a day relaxing in a striped beach chair, you can stroll through the Old Village and visit one of the many shops, pubs and restaurants in Shanklin. {{42}}",
+            "England may not conjure up images of a sun-soaked, idyllic paradise. Thanks to its unpredictable weather you never know if your trip to the seaside will leave you with sunburn or if it will be washed out by the rain. One thing's for certain – you'll never be bored."
+          ]
+        },
+        {
+          id: "p7", label: "Part 7", name: "Multiple matching", type: "matching",
+          instr: "You are going to read a magazine article about four people who studied abroad. For questions 43–52, choose from the four people (<strong>A–D</strong>). The people may be chosen more than once.",
+          title: "Studying abroad",
+          subtitle: "Four young people talk about their experiences studying abroad.",
+          people: [
+            { l: "A", name: "Emma Baker", text: "After watching a presentation at school by a group of students who had just returned from an exchange programme in Egypt, I felt inspired to apply for it myself. As all the programmes were in English, there are many options to choose from. In the end, I chose to go to Berlin because it isn't too far from Wales, so I could hop on a plane home if I got homesick. Luckily, that wasn't a problem, and I didn't even want to come home at the end of my six-month stay! I was apprehensive before leaving, but Berlin felt like home right from the moment I stepped off the plane. I think that my host family was a big part of that – they went above and beyond to make me feel welcome and helped me sort out little things like getting a German SIM card, metro pass and even told me about the best places to go shopping. I would have been lost without them!" },
+            { l: "B", name: "Ben Davies", text: "When you are studying abroad, it's funny how you miss things that you didn't even realise were important to you. I used to get ridiculously excited when hearing someone speak English with a strong Yorkshire accent – it made me feel so nostalgic. On my course, I met people from around the world and I learnt that, even though we have different backgrounds and beliefs, we all have the same capacity to be kind. Although a couple of people in my course had the same native language, everyone's common language was Italian. There were a lot of miscommunications since we were all still students, but they were easily overcome with lots of hand gestures and laughter; and the occasional online translation, of course." },
+            { l: "C", name: "Caleb Smith", text: "Being far away from my family for eleven months was tough. Most of my classmates chose a college in Spain, but it has always been my dream to visit South America, so I applied for a programme in Buenos Aires. Unfortunately, I didn't take into account the distance or the cost of the flights. My mum was able to visit me for my birthday, and we spent a fabulous few days exploring the city, but nobody else was able to make the trip. Even though I was able to keep in regular contact with everyone back home, and I could 'join in' on celebrations through video calls, I still felt like I missed out on a lot of family moments. I would definitely study abroad again, but I'd probably choose somewhere closer to home." },
+            { l: "D", name: "Laila Green", text: "People can have a low opinion about English cuisine, but my time abroad made me appreciate it so much. I found myself dreaming about classic British puddings, and I craved for things I hardly ever eat, like birthday cake! I struggled a bit with food on my study abroad programme as it was a little spicy for my taste. I should have packed some more snacks from home in my suitcase. Aside from the food, I only have positive things to say about my experience. It's completely normal to feel unsure in the beginning, but you should definitely take the chance. I'm certain that it will be the best thing you ever do!" }
+          ],
+          lead: "Which person",
+          questions: [
+            [43, "found the place that made them homesick unsurprising?"],
+            [44, "had problems adapting to the local cuisine?"],
+            [45, "wasn't looking forward to the end of their experience abroad?"],
+            [46, "needed to resort to miming at times to communicate?"],
+            [47, "spent a special date accompanied by someone from their home country?"],
+            [48, "mentions how they felt when hearing a particular way of speaking?"],
+            [49, "says they enjoyed the place from the very beginning?"],
+            [50, "expresses their thanks towards someone from the place they visited?"],
+            [51, "encourages the reader to try the same experience as them?"],
+            [52, "showed concerns regarding the expenses of their experience?"]
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+/* Đáp án (mã hóa) */
+const KEYS = JSON.parse(decodeURIComponent(escape(atob("eyJ0MSI6IHsiMjUiOiB7ImFjYyI6IFsiYXBvbG9naXNlZCBmb3IgaGF2aW5nIiwgImFwb2xvZ2l6ZWQgZm9yIGhhdmluZyIsICJzYWlkIHNvcnJ5IGZvciBoYXZpbmciXSwgImFucyI6ICJBUE9MT0dJU0VEIEZPUiBIQVZJTkciLCAiaGludCI6ICInSSdtIHNvcnJ5IGZvcuKApicgPSBhcG9sb2dpc2UgZm9yICsgVi1pbmcuIFZp4buHYyBnw6J5IHLhuq9jIHLhu5FpIHjhuqN5IHJhIHRyxrDhu5tjIGzhu51pIHhpbiBs4buXaSwgdsOgIHNhdSBjaOG7lyB0cuG7kW5nIGzDoCAnY2F1c2VkJyAoVjMpLCBuw6puIGPhuqduICdoYXZpbmcnOiBFbW1hIGFwb2xvZ2lzZWQgZm9yIGhhdmluZyBjYXVzZWQgc28gbXVjaCB0cm91YmxlLiJ9LCAiMjYiOiB7ImFjYyI6IFsid2FzIHNlbnQiLCAid2FzIHNlbnQgc29tZSIsICJ3YXMgc2VudCBtYW55IiwgIndhcyBzZW50IGxvdHMgb2YiLCAid2FzIHNlbnQgYSBsb3Qgb2YiLCAid2FzIGdpdmVuIiwgIndhcyBnaXZlbiBzb21lIl0sICJhbnMiOiAiV0FTIFNFTlQiLCAiaGludCI6ICJDaHV54buDbiBzYW5nIGLhu4sgxJHhu5luZzogc29tZW9uZSBzZW50IEpha2UgbWVzc2FnZXMg4oaSIEpha2Ugd2FzIHNlbnQgKHNvbWUpIHJlYWxseSBuaWNlIG1lc3NhZ2VzLiBLaMO0bmcgZMO5bmcgJ3JlY2VpdmVkJyB24bubaSBXQVMsIHbDoCBraMO0bmcgxJHhurd0ICdzdWNoJyB0csaw4bubYyAncmVhbGx5IG5pY2UnLiJ9LCAiMjciOiB7ImFjYyI6IFsic3VjY2VlZCBpbiBoZWxwaW5nIl0sICJhbnMiOiAiU1VDQ0VFRCBJTiBIRUxQSU5HIiwgImhpbnQiOiAibWFuYWdlIHRvIGRvIHNvbWV0aGluZyA9IHN1Y2NlZWQgaW4gZG9pbmcgc29tZXRoaW5nLiBTYXUgZ2nhu5tpIHThu6sgSU4gxJHhu5luZyB04burIHBo4bqjaSDhu58gZOG6oW5nIFYtaW5nOiBJIGRpZG4ndCBzdWNjZWVkIGluIGhlbHBpbmcgTWFyY28uIn0sICIyOCI6IHsiYWNjIjogWyJpbiB0aGUgbnVtYmVyIG9mIl0sICJhbnMiOiAiSU4gVEhFIE5VTUJFUiBPRiIsICJoaW50IjogIkPhu6VtIGPhu5EgxJHhu4tuaDogYSByaXNlIGluIHRoZSBudW1iZXIgb2YgKyBkYW5oIHThu6sgc+G7kSBuaGnhu4F1LiAnbW9yZSBkcm9wb3V0cycgPSBhIHJpc2UgaW4gdGhlIG51bWJlciBvZiBkcm9wb3V0cy4ifSwgIjI5IjogeyJhY2MiOiBbImlzIG5vdCBhbGxvd2VkIiwgImlzbid0IGFsbG93ZWQiXSwgImFucyI6ICJJUyBOT1QgQUxMT1dFRCIsICJoaW50IjogIkNo4bunIG5n4buvICd0YWtpbmcgcGhvdG9zJyBsw6AgY+G7pW0gVi1pbmcgbsOqbiDEkeG7mW5nIHThu6sgY2hpYSBz4buRIMOtdCAoaXMsIGtow7RuZyBwaOG6o2kgYXJlKS4gJ1lvdSBtdXN0IG5vdCcgPSBpcyBub3QgYWxsb3dlZC4ifSwgIjMwIjogeyJhY2MiOiBbImJyaW5naW5nIHVwIGEgY2hpbGQiLCAiYnJpbmdpbmcgYSBjaGlsZCB1cCJdLCAiYW5zIjogIkJSSU5HSU5HIFVQIEEgQ0hJTEQiLCAiaGludCI6ICJyYWlzZSBhIGNoaWxkID0gYnJpbmcgdXAgYSBjaGlsZC4gQ+G7pW0gbsOgeSBsw6BtIGNo4bunIG5n4buvIGNobyDEkeG7mW5nIHThu6sgJ2NhdXNlZCcgbsOqbiBkw7luZyBWLWluZzogSSB0aGluayBicmluZ2luZyB1cCBhIGNoaWxkIGluIHN1Y2ggYSBiaWcgY2l0eSBjYXVzZWQgaGVyIGZlYXIuIn0sICIzMSI6IHsiYW5zIjogIkIiLCAiaGludCI6ICLEkG/huqFuIDE6ICdUaGVpciB3b29kZW4gaG91c2UnIChuaMOgIGLhurFuZyBn4buXKSB2w6AgJ2ZvdXIgd2FsbHMsIGEgZmxvb3IgYW5kIGEgcm9vZiwgd2hpY2ggbWFkZSBvbmUgcm9vbScgKGNo4buJIG3hu5l0IHBow7JuZykuIEEgc2FpOiAnZm91ciB3YWxscycgbMOgIGLhu5FuIGLhu6ljIHTGsOG7nW5nLCBraMO0bmcgcGjhuqNpIGLhu5FuIHBow7JuZy4ifSwgIjMyIjogeyJhbnMiOiAiQSIsICJoaW50IjogIsSQb+G6oW4gMjogJ05vdCBhIHRyZWUgbm9yIGEgaG91c2UgYnJva2UgdGhlIGJyb2FkIHN3ZWVwIG9mIGZsYXQgY291bnRyeScg4oCUIG5ow6xuIG3hu41pIGjGsOG7m25nIGtow7RuZyB0aOG6pXkgbeG7mXQgbmfDtGkgbmjDoCBuw6BvLCB04bupYyBsw6Aga2jDtG5nIGPDsyBow6BuZyB4w7NtLiBDIHF1w6EgdHV54buHdCDEkeG7kWk6IERvcm90aHkgduG6q24gdnVpIMSRw7lhIGPDuW5nIFRvdG8sIG7Dqm4ga2jDtG5nIHRo4buDIG7Ds2kgJ3dpdGhvdXQgYW55IGhhcHBpbmVzcycuIn0sICIzMyI6IHsiYW5zIjogIkMiLCAiaGludCI6ICLEkG/huqFuIDM6IGTDrCBFbSDEkeG6v24gS2Fuc2FzIGtoaSBjw7JuICd5b3VuZywgcHJldHR5JywgbmjGsG5nIG7huq9uZyBnacOzIMSRw6MgbOG6pXkgxJFpIMOhbmggbeG6r3QgbOG6pXAgbMOhbmgsIMSRw7RpIG3DoSBo4buTbmc7IGTDrCBn4bqneSB2w6AgJ25ldmVyIHNtaWxlZCBub3cnIOKGkiBjdeG7mWMgc+G7kW5nIOG7nyBLYW5zYXMgduG6pXQgduG6oy4gRCBzYWk6IGTDrCB04burbmcgZ2nhuq10IG3DrG5oIGjDqXQgbMOqbiBraGkgbmdoZSBEb3JvdGh5IGPGsOG7nWkuIn0sICIzNCI6IHsiYW5zIjogIkEiLCAiaGludCI6ICInYXMgZ3JleSBhcyBoZXIgb3RoZXIgc3Vycm91bmRpbmdzJyBjaOG7iSB0b8OgbiBi4buZIG5o4buvbmcgZ8OsIHh1bmcgcXVhbmggRG9yb3RoeTogdGjhuqNvIG5ndXnDqm4sIG5nw7RpIG5ow6AsIGTDrCBFbSwgY2jDuiBIZW5yeSDigJQgdOG6pXQgY+G6oyDEkeG7gXUgxJHGsOG7o2MgdOG6oyBsw6AgeMOhbSB44buLdC4ifSwgIjM1IjogeyJhbnMiOiAiRCIsICJoaW50IjogIsSQb+G6oW4gNTogJ1RvZGF5LCBob3dldmVy4oCmJyDigJQgY2jDuiBIZW5yeSBsbyBs4bqvbmcgbmjDrG4gYuG6p3UgdHLhu51pICdldmVuIGdyZXllciB0aGFuIHVzdWFsJy4gU+G7sSBsbyBs4bqvbmcgYsOhbyBoaeG7h3UgY8ahbiBiw6NvIHPhuq9wIMSR4bq/biwgc+G7sSBraeG7h24gbeG7nyDEkeG6p3UgY2hvIHRvw6BuIGLhu5kgY+G7kXQgdHJ1eeG7h24uIn0sICIzNiI6IHsiYW5zIjogIkQiLCAiaGludCI6ICLEkG/huqFuIGN14buRaTogZ2nDsyByw610IHThu6sgcGjGsMahbmcgYuG6r2MsIHLhu5NpIHThu6sgcGjGsMahbmcgbmFtLCBj4buPIHLhuqFwIHRoZW8gaGFpIGjGsOG7m25nIOKGkiBt4buZdCBjxqFuIGzhu5FjIHhvw6F5IHPhuq9wIHThu5tpLiDEkG/huqFuIDEgY8WpbmcgxJHDoyBuaOG6r2MgxJHhur9uICdjeWNsb25lIGNlbGxhcicgxJHhu4MgdHLDuiBs4buRYyB4b8OheS4ifSwgIjM3IjogeyJhbnMiOiAiRiIsICJoaW50IjogIkPDonUgdHLGsOG7m2MgbGnhu4d0IGvDqiDEkeG7pyBjw6FjIGdpw6FjIHF1YW46IGNo4bqhbSAoc2FuZCB1bmRlciB5b3VyIHRvZXMpLCBuaMOsbiAoYmVhY2ggaHV0cyksIG5naGUgKHNob3V0cywgc3F1YXdrcyksIG5n4butaSAoc21lbGwgb2Ygc2FsdCkg4oaSIEYgJ2NhcHR1cmVzIGFsbCB0aGUgc2Vuc2VzJyB04buVbmcga+G6v3Qgw70gxJHDsy4ifSwgIjM4IjogeyJhbnMiOiAiRCIsICJoaW50IjogIidJdHMgYWdlJyB0cm9uZyBjw6J1IEQgbuG7kWkgdHLhu7FjIHRp4bq/cCB24bubaSAnVGhlIDQwMC15ZWFyIGhpc3RvcnknIOG7nyBjw6J1IHRyxrDhu5tjOyDEkcaw4budbmcgYuG7nSBiaeG7g24gdsOgIGhhbmcgxJHhu5luZyB0aeG7gW4gc+G7rSBtaW5oIGjhu41hIGNobyBz4buxIGzDonUgxJHhu51pLiJ9LCAiMzkiOiB7ImFucyI6ICJCIiwgImhpbnQiOiAiQ8OidSBzYXUgbeG7nyDEkeG6p3UgYuG6sW5nICdJZiB5b3UgZmFuY3kgc29tZXRoaW5nIGEgbGl0dGxlIG1vcmUgc29waGlzdGljYXRlZCcg4oCUIGPhuqduIG3hu5l0IGPDonUgdHLGsOG7m2MgbsOzaSB24buBIGPDoWMgdHLDsiB2dWkgY2jGoWkgc8O0aSDEkeG7mW5nIChkb2RnZW1zLCBnaG9zdCB0cmFpbiwgZ28ta2FydGluZykgdHLDqm4gY+G6p3UgdMOgdSBu4buVaSB0aeG6v25nIMSR4buDIHThuqFvIMSR4buRaSBs4bqtcC4ifSwgIjQwIjogeyJhbnMiOiAiRyIsICJoaW50IjogIkcgJ2ZhbWlseS1mcmllbmRseSBiZWFjaGVzIHByb3ZpZGUgaG91cnMgb2YgZnJlZSBlbnRlcnRhaW5tZW50JyDEkcaw4bujYyB0cmnhu4NuIGtoYWkgbmdheSBi4bqxbmcgZGFuaCBzw6FjaCBob+G6oXQgxJHhu5luZyBwaMOtYSBzYXU6ICdGcm9tIGNsaW1iaW5nIG92ZXIgcm9ja3MsIHRvIHBhZGRsZWJvYXJkaW5n4oCmJy4ifSwgIjQxIjogeyJhbnMiOiAiQyIsICJoaW50IjogIkPDonUgdHLGsOG7m2Mga+G6v3QgdGjDumMgYuG6sW5nICd0aGVyZSdzIHNvbWV0aGluZyBmb3IgZXZlcnlvbmUnIOKGkiBDIGLhu5Ugc3VuZyAnZXZlbiBmdXJyeSBmcmllbmRzJyAobmdheSBj4bqjIHRow7ogY8awbmcgY8WpbmcgxJFpIGPDuW5nIMSRxrDhu6NjKS4gVOG7qyAnZXZlbicgbuG7kWkgdGnhur9wIMO9ICdmb3IgZXZlcnlvbmUnLiJ9LCAiNDIiOiB7ImFucyI6ICJFIiwgImhpbnQiOiAixJBv4bqhbiB24buBIFNoYW5rbGluIG5o4bqvYyDEkeG6v24gYsOjaSBiaeG7g24gKHNhbmR5IHNob3JlKSB2w6AgdGjhu4sgdHLhuqVuIChPbGQgVmlsbGFnZSwgc2hvcHMsIHB1YnMsIHJlc3RhdXJhbnRzKSDihpIgRSAnbWl4dHVyZSBvZiBncmVlbiBzcGFjZXMsIGJlYWNoIGFuZCB0b3duJy4gQ8OidSBBIGzDoCBjw6J1IHRo4burYS4ifSwgIjQzIjogeyJhbnMiOiAiQyIsICJoaW50IjogIkNhbGViOiAnQmVpbmcgZmFyIGF3YXkgZnJvbSBteSBmYW1pbHkgZm9yIGVsZXZlbiBtb250aHMgd2FzIHRvdWdo4oCmIEkgZGlkbid0IHRha2UgaW50byBhY2NvdW50IHRoZSBkaXN0YW5jZScgdsOgIHNhdSBuw6B5ICdJJ2QgcHJvYmFibHkgY2hvb3NlIHNvbWV3aGVyZSBjbG9zZXIgdG8gaG9tZScg4oaSIG7GoWkgcXXDoSB4YSBuaMOgIGtoaeG6v24gbmjhu5sgbmjDoCBsw6AgxJFp4buBdSBk4buFIGhp4buDdS4gRW1tYSAoQSkgdGjDrCBraMO0bmcgaOG7gSBuaOG7myBuaMOgOiAndGhhdCB3YXNuJ3QgYSBwcm9ibGVtJy4ifSwgIjQ0IjogeyJhbnMiOiAiRCIsICJoaW50IjogIkxhaWxhOiAnSSBzdHJ1Z2dsZWQgYSBiaXQgd2l0aCBmb29kIG9uIG15IHN0dWR5IGFicm9hZCBwcm9ncmFtbWUgYXMgaXQgd2FzIGEgbGl0dGxlIHNwaWN5IGZvciBteSB0YXN0ZS4nIn0sICI0NSI6IHsiYW5zIjogIkEiLCAiaGludCI6ICJFbW1hOiAnSSBkaWRuJ3QgZXZlbiB3YW50IHRvIGNvbWUgaG9tZSBhdCB0aGUgZW5kIG9mIG15IHNpeC1tb250aCBzdGF5IScifSwgIjQ2IjogeyJhbnMiOiAiQiIsICJoaW50IjogIkJlbjogaGnhu4N1IGzhuqdtIMSRxrDhu6NjIGdp4bqjaSBxdXnhur90ICd3aXRoIGxvdHMgb2YgaGFuZCBnZXN0dXJlcyBhbmQgbGF1Z2h0ZXInIOKAlCBoYW5kIGdlc3R1cmVzIGNow61uaCBsw6AgbWltaW5nIChyYSBk4bqldSBi4bqxbmcgdGF5KS4ifSwgIjQ3IjogeyJhbnMiOiAiQyIsICJoaW50IjogIkNhbGViOiAnTXkgbXVtIHdhcyBhYmxlIHRvIHZpc2l0IG1lIGZvciBteSBiaXJ0aGRheScg4oCUIG5nw6B5IMSR4bq3YyBiaeG7h3QgKHNpbmggbmjhuq10KSBjw7MgbeG6uSAobmfGsOG7nWkgY8O5bmcgcXXDqikgxJFpIGPDuW5nLiJ9LCAiNDgiOiB7ImFucyI6ICJCIiwgImhpbnQiOiAiQmVuOiAnaGVhcmluZyBzb21lb25lIHNwZWFrIEVuZ2xpc2ggd2l0aCBhIHN0cm9uZyBZb3Jrc2hpcmUgYWNjZW50IOKAkyBpdCBtYWRlIG1lIGZlZWwgc28gbm9zdGFsZ2ljJy4ifSwgIjQ5IjogeyJhbnMiOiAiQSIsICJoaW50IjogIkVtbWE6ICdCZXJsaW4gZmVsdCBsaWtlIGhvbWUgcmlnaHQgZnJvbSB0aGUgbW9tZW50IEkgc3RlcHBlZCBvZmYgdGhlIHBsYW5lLicifSwgIjUwIjogeyJhbnMiOiAiQSIsICJoaW50IjogIkVtbWEgbsOzaSB24buBIGdpYSDEkcOsbmggYuG6o24geOG7qSAoaG9zdCBmYW1pbHkpOiAnSSB3b3VsZCBoYXZlIGJlZW4gbG9zdCB3aXRob3V0IHRoZW0hJyDigJQgbOG7nWkgY+G6o20gxqFuIG5nxrDhu51pIOG7nyBuxqFpIG3DrG5oIMSR4bq/bi4ifSwgIjUxIjogeyJhbnMiOiAiRCIsICJoaW50IjogIkxhaWxhOiAneW91IHNob3VsZCBkZWZpbml0ZWx5IHRha2UgdGhlIGNoYW5jZS4gSSdtIGNlcnRhaW4gdGhhdCBpdCB3aWxsIGJlIHRoZSBiZXN0IHRoaW5nIHlvdSBldmVyIGRvIScifSwgIjUyIjogeyJhbnMiOiAiQyIsICJoaW50IjogIkNhbGViOiAnSSBkaWRuJ3QgdGFrZSBpbnRvIGFjY291bnQgdGhlIGRpc3RhbmNlIG9yIHRoZSBjb3N0IG9mIHRoZSBmbGlnaHRzLicifX19"))));
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+const LET = ["A","B","C","D"];
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+const norm = s => s.toLowerCase().replace(/[’‘`]/g,"'").replace(/[.,!?;:"]/g," ").replace(/\s+/g," ").trim();
+
+const REG = {};        // "t1-25" -> {t, p, n, kind}
+const PARTQ = {};      // "t1/p4" -> ["t1-25", ...]
+const TESTQ = {};      // "t1" -> [...]
+const ORDER = [];      // ["t1/p4", ...]
+const chosen = {}, graded = {}, checkedParts = {}, submittedTests = {};
+let mode = "exam", current = null;
+
+function reg(t, p, n, kind) {
+  const k = `${t.id}-${n}`;
+  REG[k] = { t: t.id, p: p.id, n, kind };
+  (PARTQ[`${t.id}/${p.id}`] ||= []).push(k);
+  (TESTQ[t.id] ||= []).push(k);
+  return k;
+}
+const fbDiv = k => `<div class="fb" id="fb-${k}"></div>`;
+const optBtn = (k, l, text) => `<button type="button" class="opt" data-k="${k}" data-v="${l}" aria-label="${REG[k].n} ${l}"><span class="letter">${l}</span>${text ? `<span class="opt-text">${esc(text)}</span>` : ""}</button>`;
+
+/* ---------- Renderers ---------- */
+const R = {
+  kwt(t, p) {
+    const e = p.example;
+    let h = e ? `<div class="example"><b>Example (0):</b> ${esc(e.orig)} <b>${esc(e.key)}</b><br>${esc(e.pre)} <span class="example-ans">${esc(e.ans)}</span> ${esc(e.post)}</div>` : "";
+    return h + p.items.map(i => {
+      const k = reg(t, p, i.n, "input");
+      return `<div class="card">
+        <div class="kwt-original"><span class="qn">${i.n}</span>${esc(i.orig)}</div>
+        <span class="kwt-key">${esc(i.key)}</span>
+        <div class="kwt-line">${esc(i.pre)} <input class="txt-in" id="in-${k}" data-k="${k}" autocomplete="off" spellcheck="false" placeholder="2–5 words, include ${esc(i.key)}" aria-label="Question ${i.n}"> ${esc(i.post)}</div>
+        ${fbDiv(k)}</div>`;
+    }).join("");
+  },
+  mc(t, p) {
+    let h = `<div class="passage">${p.passage.map(x => `<p>${esc(x)}</p>`).join("")}</div>`;
+    if (p.source) h += `<span class="src">${esc(p.source)}</span>`;
+    return h + p.questions.map(q => {
+      const k = reg(t, p, q.n, "opt");
+      return `<div class="card"><div class="q-title"><span class="qn">${q.n}</span><span>${esc(q.q)}</span></div>
+        <div class="opts">${q.o.map((o, i) => optBtn(k, LET[i], o)).join("")}</div>${fbDiv(k)}</div>`;
+    }).join("");
+  },
+  gapped(t, p) {
+    const letters = Object.keys(p.options);
+    let h = `<div class="bank">${letters.map(l => `<div class="bank-row"><b>${l}</b><span>${esc(p.options[l])}</span></div>`).join("")}</div>`;
+    const keys = [];
+    const body = p.paragraphs.map(x => `<p>${esc(x).replace(/\{\{(\d+)\}\}/g, (_, n) => {
+      const k = reg(t, p, +n, "select"); keys.push(k);
+      return `<span class="gap"><span class="gap-n">${n}</span><select class="gap-sel" id="sel-${k}" data-k="${k}" aria-label="Gap ${n}"><option value="">…</option>${letters.map(l => `<option>${l}</option>`).join("")}</select></span>`;
+    })}</p>`).join("");
+    return h + `<div class="article">${p.title ? `<h3 class="text-title">${esc(p.title)}</h3>` : ""}${body}</div><div class="fb-list">${keys.map(fbDiv).join("")}</div>`;
+  },
+  matching(t, p) {
+    let h = p.title ? `<h3 class="text-title">${esc(p.title)}</h3>` : "";
+    if (p.subtitle) h += `<p class="text-sub">${esc(p.subtitle)}</p>`;
+    h += `<div class="people">${p.people.map(x => `<div class="person"><h4><span>${x.l}</span>${esc(x.name)}</h4>${esc(x.text)}</div>`).join("")}</div>`;
+    const letters = p.people.map(x => x.l);
+    h += `<p class="lead">${esc(p.lead || "")}</p>`;
+    return h + p.questions.map(([n, q]) => {
+      const k = reg(t, p, n, "opt");
+      return `<div class="card"><div class="mm-row"><span class="qn">${n}</span><span class="mm-q">${esc(q)}</span>
+        <div class="mm-opts">${letters.map(l => optBtn(k, l)).join("")}</div></div>${fbDiv(k)}</div>`;
+    }).join("");
+  },
+  cloze(t, p) {
+    const keys = [];
+    const body = p.paragraphs.map(x => `<p>${esc(x).replace(/\{\{(\d+)\}\}/g, (_, n) => {
+      if (p.variant === "mc") {
+        const k = reg(t, p, +n, "select"); keys.push(k);
+        const ch = p.choices[n];
+        return `<span class="gap"><span class="gap-n">${n}</span><select class="gap-sel" id="sel-${k}" data-k="${k}" aria-label="Gap ${n}"><option value="">…</option>${ch.map((c, i) => `<option value="${LET[i]}">${LET[i]} ${esc(c)}</option>`).join("")}</select></span>`;
+      }
+      const k = reg(t, p, +n, "input"); keys.push(k);
+      const stem = p.variant === "wordform" && p.stems ? ` <span class="stem">(${esc(p.stems[n])})</span>` : "";
+      return `<span class="gap"><span class="gap-n">${n}</span><input class="txt-in" id="in-${k}" data-k="${k}" autocomplete="off" spellcheck="false" aria-label="Gap ${n}">${stem}</span>`;
+    })}</p>`).join("");
+    return `<div class="article">${p.title ? `<h3 class="text-title">${esc(p.title)}</h3>` : ""}${body}</div><div class="fb-list">${keys.map(fbDiv).join("")}</div>`;
+  }
+};
+
+/* ---------- Build page ---------- */
+function build() {
+  document.getElementById("brand").textContent = BOOK.title;
+  document.title = BOOK.title;
+  const content = document.getElementById("content");
+  let toc = "", html = "";
+  BOOK.tests.forEach((t, ti) => {
+    toc += `<details${ti === 0 ? " open" : ""}><summary><span class="t-title">${esc(t.title)}</span><span class="badge" id="tb-${t.id}"></span></summary>`;
+    t.parts.forEach(p => {
+      const pk = `${t.id}/${p.id}`; ORDER.push(pk);
+      toc += `<a href="#${pk}" class="toc-link" data-part="${pk}"><span>${esc(p.label)}<small>${esc(p.name)}</small></span><span class="badge" id="bd-${t.id}-${p.id}"></span></a>`;
+      html += `<section class="part" id="sec-${t.id}-${p.id}" hidden>
+        <div class="crumb">${esc(t.title)} › ${esc(p.label)}</div>
+        <h2>${esc(p.label)} — ${esc(p.name)}</h2>
+        <div class="results only-exam" data-test="${t.id}"></div>
+        <div class="instr">${p.instr || ""}</div>
+        ${R[p.type](t, p)}
+        <div class="part-actions">
+          <span class="status" id="st-${t.id}-${p.id}"></span>
+          <button type="button" class="btn btn-nav" data-act="prev" data-part="${pk}">← Trước</button>
+          <button type="button" class="btn btn-nav" data-act="next" data-part="${pk}">Tiếp →</button>
+          <button type="button" class="btn btn-ghost only-practice" data-act="redo" data-part="${pk}">Làm lại Part</button>
+          <button type="button" class="btn btn-primary only-practice" data-act="check" data-part="${pk}">Kiểm tra ${esc(p.label)}</button>
+          <button type="button" class="btn btn-ghost only-exam" data-act="redoTest" data-test="${t.id}">Làm lại ${esc(t.title)}</button>
+          <button type="button" class="btn btn-primary only-exam" data-act="submit" data-test="${t.id}">Nộp bài ${esc(t.title)}</button>
+        </div>
+      </section>`;
+    });
+    toc += `</details>`;
+  });
+  document.getElementById("toc").innerHTML = toc;
+  content.innerHTML = html;
+}
+
+/* ---------- Answers ---------- */
+const key = k => KEYS[REG[k].t][REG[k].n];
+function value(k) {
+  const r = REG[k];
+  if (r.kind === "input") return document.getElementById("in-" + k).value.trim();
+  if (r.kind === "select") return document.getElementById("sel-" + k).value;
+  return chosen[k] || "";
+}
+const answered = k => value(k) !== "";
+const locked = k => k in graded;
+
+function grade(k) {
+  const r = REG[k], a = key(k), v = value(k);
+  const ok = v !== "" && (a.acc ? a.acc.includes(norm(v)) : v === a.ans);
+  graded[k] = ok;
+  if (r.kind === "input") {
+    const el = document.getElementById("in-" + k); el.classList.add(ok ? "ok" : "err"); el.readOnly = true;
+  } else if (r.kind === "select") {
+    const el = document.getElementById("sel-" + k); el.classList.add(ok ? "ok" : "err"); el.disabled = true;
+  } else {
+    document.querySelectorAll(`.opt[data-k="${k}"]`).forEach(o => {
+      o.disabled = true; o.classList.remove("chosen");
+      if (o.dataset.v === v) o.classList.add(ok ? "r-ok" : "r-err");
+      if (!ok && o.dataset.v === a.ans) o.classList.add("r-ok");
+    });
+  }
+  const fb = document.getElementById("fb-" + k);
+  const label = r.kind === "select" || (r.kind === "input" && !document.getElementById("in-" + k).closest(".kwt-line")) ? `<b>Câu ${r.n}:</b> ` : "";
+  fb.className = "fb show " + (ok ? "ok" : "err");
+  fb.innerHTML = ok ? `${label}✓ Correct!`
+    : `${label}${v === "" ? "✗ Chưa trả lời." : "✗ Chưa đúng."} Đáp án: <span class="ans">${esc(a.ans)}</span>${a.hint ? `<span class="hint">${esc(a.hint)}</span>` : ""}`;
+}
+function clear(k) {
+  const r = REG[k];
+  delete graded[k]; delete chosen[k];
+  if (r.kind === "input") { const el = document.getElementById("in-" + k); el.value = ""; el.className = "txt-in"; el.readOnly = false; }
+  else if (r.kind === "select") { const el = document.getElementById("sel-" + k); el.value = ""; el.className = "gap-sel"; el.disabled = false; }
+  else document.querySelectorAll(`.opt[data-k="${k}"]`).forEach(o => { o.disabled = false; o.className = "opt"; });
+  const fb = document.getElementById("fb-" + k); fb.className = "fb"; fb.innerHTML = "";
+}
+
+function confirmMissing(keys) {
+  const miss = keys.filter(k => !answered(k)).map(k => REG[k].n);
+  return !miss.length || confirm(`Còn ${miss.length} câu chưa làm (${miss.join(", ")}). Câu bỏ trống tính là sai. Vẫn chấm?`);
+}
+function checkPart(pk) {
+  const keys = PARTQ[pk];
+  if (checkedParts[pk] || !confirmMissing(keys)) return;
+  keys.forEach(grade); checkedParts[pk] = true; refresh();
+}
+function submitTest(tid) {
+  const keys = TESTQ[tid];
+  if (submittedTests[tid] || !confirmMissing(keys)) return;
+  keys.forEach(grade); submittedTests[tid] = true;
+  const t = BOOK.tests.find(x => x.id === tid);
+  let total = 0;
+  const rows = t.parts.map(p => {
+    const ks = PARTQ[`${tid}/${p.id}`], r = ks.filter(k => graded[k]).length; total += r;
+    return `<div class="res-row"><span>${esc(p.label)} · ${esc(p.name)}</span><b>${r} / ${ks.length}</b></div>`;
+  }).join("");
+  document.querySelectorAll(`.results[data-test="${tid}"]`).forEach(el => {
+    el.innerHTML = `<h3>Kết quả ${esc(t.title)}</h3>${rows}<div class="res-row total"><span>Tổng</span><b>${total} / ${keys.length}</b></div>`;
+    el.classList.add("show");
+  });
+  refresh(); window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function resetKeys(keys) { keys.forEach(clear); }
+function resetAll() {
+  Object.keys(REG).forEach(clear);
+  for (const o of [checkedParts, submittedTests]) for (const k in o) delete o[k];
+  document.querySelectorAll(".results").forEach(el => { el.classList.remove("show"); el.innerHTML = ""; });
+  refresh();
+}
+
+/* ---------- Status ---------- */
+function refresh() {
+  BOOK.tests.forEach(t => {
+    let tr = 0;
+    t.parts.forEach(p => {
+      const pk = `${t.id}/${p.id}`, ks = PARTQ[pk], n = ks.length;
+      const a = ks.filter(answered).length, r = ks.filter(k => graded[k]).length; tr += r;
+      const done = mode === "exam" ? !!submittedTests[t.id] : !!checkedParts[pk];
+      const bd = document.getElementById(`bd-${t.id}-${p.id}`);
+      bd.textContent = done ? `${r}/${n}` : `${a}/${n}`;
+      bd.className = "badge" + (done ? " done" : "");
+      bd.title = done ? "Số câu đúng" : "Số câu đã làm";
+      document.getElementById(`st-${t.id}-${p.id}`).innerHTML = done
+        ? `Kết quả: <b>${r}/${n}</b> câu đúng`
+        : `Đã làm ${a}/${n} câu`;
+      document.querySelector(`[data-act="check"][data-part="${pk}"]`).disabled = !!checkedParts[pk];
+    });
+    const tb = document.getElementById("tb-" + t.id);
+    tb.textContent = mode === "exam" && submittedTests[t.id] ? `${tr}/${TESTQ[t.id].length}` : "";
+    tb.className = "badge" + (tb.textContent ? " done" : "");
+    tb.style.display = tb.textContent ? "" : "none";
+    document.querySelectorAll(`[data-act="submit"][data-test="${t.id}"]`).forEach(b => b.disabled = !!submittedTests[t.id]);
+  });
+}
+
+/* ---------- Navigation ---------- */
+function show(pk) {
+  if (!ORDER.includes(pk)) pk = ORDER[0];
+  current = pk;
+  const [t, p] = pk.split("/");
+  document.querySelectorAll(".part").forEach(s => s.hidden = s.id !== `sec-${t}-${p}`);
+  document.querySelectorAll(".toc-link").forEach(a => a.classList.toggle("active", a.dataset.part === pk));
+  const det = document.querySelector(`.toc-link[data-part="${pk}"]`).closest("details"); det.open = true;
+  const i = ORDER.indexOf(pk);
+  document.querySelectorAll(`[data-act="prev"][data-part="${pk}"]`).forEach(b => b.disabled = i === 0);
+  document.querySelectorAll(`[data-act="next"][data-part="${pk}"]`).forEach(b => b.disabled = i === ORDER.length - 1);
+  if (location.hash !== "#" + pk) history.replaceState(null, "", "#" + pk);
+  document.body.classList.remove("nav-open");
+  window.scrollTo({ top: 0 });
+}
+
+/* ---------- Mode ---------- */
+const DESC = {
+  exam: "Làm hết các Part của một test rồi bấm “Nộp bài” để xem số câu đúng từng Part.",
+  practice: "Làm xong một Part thì bấm “Kiểm tra” để chấm riêng Part đó."
+};
+function setMode(m) {
+  mode = m;
+  document.body.classList.remove("exam", "practice"); document.body.classList.add(m);
+  document.querySelectorAll(".seg-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === m));
+  document.getElementById("mode-desc").textContent = DESC[m];
+  resetAll();
+}
+
+/* ---------- Events ---------- */
+function bind() {
+  document.querySelectorAll(".seg-btn").forEach(b => b.onclick = () => {
+    if (b.dataset.mode === mode) return;
+    if (Object.keys(REG).some(answered) && !confirm("Đổi chế độ sẽ xóa toàn bộ bài đang làm. Tiếp tục?")) return;
+    setMode(b.dataset.mode);
+  });
+  document.getElementById("toc").addEventListener("click", e => {
+    const a = e.target.closest(".toc-link"); if (!a) return;
+    e.preventDefault(); show(a.dataset.part);
+  });
+  document.addEventListener("click", e => {
+    const o = e.target.closest(".opt");
+    if (o && !o.disabled) {
+      const k = o.dataset.k;
+      document.querySelectorAll(`.opt[data-k="${k}"]`).forEach(x => x.classList.remove("chosen"));
+      o.classList.add("chosen"); chosen[k] = o.dataset.v; refresh(); return;
+    }
+    const b = e.target.closest("[data-act]");
+    if (!b || b.disabled) return;
+    const act = b.dataset.act, pk = b.dataset.part, tid = b.dataset.test;
+    if (act === "prev") show(ORDER[ORDER.indexOf(pk) - 1]);
+    if (act === "next") show(ORDER[ORDER.indexOf(pk) + 1]);
+    if (act === "check") checkPart(pk);
+    if (act === "redo") { resetKeys(PARTQ[pk]); delete checkedParts[pk]; refresh(); window.scrollTo({ top: 0 }); }
+    if (act === "submit") submitTest(tid);
+    if (act === "redoTest") {
+      if (TESTQ[tid].some(answered) && !confirm("Xóa toàn bộ bài làm của test này?")) return;
+      resetKeys(TESTQ[tid]); delete submittedTests[tid];
+      document.querySelectorAll(`.results[data-test="${tid}"]`).forEach(el => { el.classList.remove("show"); el.innerHTML = ""; });
+      refresh(); show(`${tid}/${BOOK.tests.find(x => x.id === tid).parts[0].id}`);
+    }
+  });
+  document.addEventListener("input", e => { if (e.target.dataset && e.target.dataset.k) refresh(); });
+  document.addEventListener("change", e => { if (e.target.dataset && e.target.dataset.k) refresh(); });
+  document.getElementById("menu-btn").onclick = () => document.body.classList.add("nav-open");
+  document.getElementById("scrim").onclick = () => document.body.classList.remove("nav-open");
+  window.addEventListener("hashchange", () => show(location.hash.slice(1)));
+}
+
+build(); bind(); setMode("exam"); show(location.hash.slice(1));
+</script>
+</body>
+</html>
